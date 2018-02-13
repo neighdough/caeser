@@ -44,10 +44,11 @@ def geocode(addresses, index=None, columns=None):
         addr.drop([col for col in addr.columns if col not in columns], 
                 axis=1, inplace=True)
     addr.columns = [col.lower() for col in addr.columns]
-    field_match = {'Street':['street', 'address', 'add', 'addr'],
-                    'City': ['city', 'place', 'town', 'fraction'],
-                    'ZIP': ['zip_code', 'zip', 'zip5'],
-                    'State':['state', 'st'],
+    field_match = {'Street':['street', 'address', 'add', 'addr', 
+                             'location_address'],
+                    'City': ['city', 'place', 'town', 'fraction', 'city_name'],
+                    'ZIP': ['zip_code', 'zip', 'zip5', 'postal_code'],
+                    'State':['state', 'st', 'state_code'],
                     'OBJECTID': ['objectid', 'id', 'index', 'idx']}
     rename = dict()
     for col in addr.columns:
