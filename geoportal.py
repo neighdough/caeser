@@ -3,7 +3,7 @@ sys.path.append('/home/geonode/caeser_geonode')
 os.path.append("DJANGO_SETTINGS_MODULE", "caeser_geonode.settings")
 from geonode.layers.models import Layer, Attribute
 import pandas as pd
-from caeser import utils
+from caeser import utils, config
 from sqlalchemy import create_engine
 from nltk.corpus import stopwords 
 from nltk.tokenize import word_tokenize
@@ -150,7 +150,7 @@ def update_metadata(db):
     """
     """
 
-    params = utils.connection_properties('caeser-geo.memphis.edu', db=db)
+    params = config.geoportal
     cnxstr = "postgresql://{user}:{password}@{host}/{db}"
     engine = create_engine(cnxstr.format(**params), echo=True)
     cnx = engine.connect()
@@ -169,7 +169,7 @@ def build_wwl_views(db):
     Returns:
         None
     """
-    params = utils.connection_properties('caeser-geo.memphis.edu', db=db)
+    params = config.geoportal
     cn_str = 'postgresql://{user}:{password}@{host}:{port}/{db}'
     engine = create_engine(cn_str.format(**params))
  
