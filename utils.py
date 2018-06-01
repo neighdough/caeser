@@ -3,6 +3,9 @@ Created on Mar 26, 2015
 
 @author: nfergusn
 '''
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function 
 import collections
 import csv
 import os
@@ -14,6 +17,7 @@ import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import json
 import re
+
 
 def geocode(addresses, index=None, columns=None):
     """
@@ -150,7 +154,7 @@ def inflate(year_from, year_to, value):
     value (float)-> value to be converted
     """
     if os.name == 'posix':
-        os.chdir('/home/nate/dropbox/dev/Resources')
+        os.chdir('/home/nate/source/Resources')
     else:
         os.chdir('E:\cloud\Dropbox\Workspaces\Python\caeser\Resources')
     cpi = pd.read_csv('cpi_1913-2015.csv', dtype={'Year': np.str})
@@ -165,7 +169,7 @@ def get_cpi(year_from, year_to):
         year_to (str)-> year dollar is to be converted to
     """
     if os.name == 'posix':
-        os.chdir('/home/nate/dropbox/dev/Resources')
+        os.chdir('/home/nate/source/Resources')
     else:
         os.chdir('E:\cloud\Dropbox\Workspaces\Python\caeser\Resources')
     cpi = pd.read_csv('cpi_1913-2015.csv', index_col='Year')
@@ -186,7 +190,7 @@ def dbf_to_csv(filename):
     filename -> full path to dbf
     """
     if filename.endswith('.dbf'):
-        print "Converting %s to csv" % filename
+        print("Converting %s to csv" % filename)
         csv_fn = filename[:-4]+ ".csv"
         with open(csv_fn,'wb') as csvfile:
             in_db = dbf.Dbf(filename)
@@ -198,9 +202,9 @@ def dbf_to_csv(filename):
             for rec in in_db:
                 out_csv.writerow(rec.fieldData)
             in_db.close()
-            print "Done..."
+            print("Done...")
     else:
-        print "Filename does not end with .dbf"
+        print("Filename does not end with .dbf")
 
 def pct_change(year1, year2):
     return (year2 - year1)/year1
