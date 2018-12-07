@@ -117,7 +117,7 @@ def clean_address(addr, check=1):
     """
     addr = str(addr) if type(addr) != unicode else addr
 
-    apt_suffix = ['apt', 'suite', 'ste', '\#', 'unit', 'no', 'number', 'nu',
+    apt_suffix = ['apt', 'suite', 'ste(?!r)', '\#', 'unit', 'no(?![A-z])', 'number', 'nu',
                     'apartment', ]
     rex = collections.OrderedDict([
             #322 Scleveland, 444 Nmain
@@ -136,44 +136,62 @@ def clean_address(addr, check=1):
             (r'(?i)([0-9]{1,5}\s+)(block[\sof]*)(\s+[a-z]+)',
                 r'\g<1>\g<3>'),
             #123 N Main Apt 2, 123 N Main #5
-            (r'(\w\s)+(({})\.?\s+[0-9A-Za-z]+)'.format('|'.join(apt_suffix)), 
-                r'\g<1>')])
+            (r'\s*(({})\.?\s*[0-9A-Za-z]+)\Z'.format('|'.join(apt_suffix)), 
+                "")])
+                #r'\g<1>')])
     clean_addr = addr 
     regs = rex.keys()[1:] if check == 1 else rex.keys()
     for r in regs:
-        if re.search(r, addr):
-            clean_addr = re.sub(r, rex[r], addr)
+        if re.search(r, addr, flags=re.I):
+            clean_addr = re.sub(r, rex[r], addr, flags=re.I)
     return clean_addr.strip()
 
 
 def inflate(year_from, year_to, value):
     """
     returns inflation adjusted value
-    year_from (str)-> year dollar is to be converted from
-    year_to (str)-> year dollar is to be converted to
+    csv that is loaded is adapted from 
+    https://www.usinflationcalculator.com/inflation/consumer-price-index-and-annual-percent-changes-from-1913-to-2008/
+    
+    year_from (int)-> year dollar is to be converted from
+    year_to (int)-> year dollar is to be converted to
     value (float)-> value to be converted
     """
-    if os.name == 'posix':
-        os.chdir('/home/nate/source/Resources')
-    else:
-        os.chdir('E:\cloud\Dropbox\Workspaces\Python\caeser\Resources')
-    cpi = pd.read_csv('cpi_1913-2015.csv', dtype={'Year': np.str})
+#    if os.name == 'posix':
+#        os.chdir('/home/nate/source/Resources')
+#    else:
+#        os.chdir('E:\cloud\Dropbox\Workspaces\Python\caeser\Resources')
+    path = os.path.dirname(os.path.abspath(__file__))
+    cpi = pd.read_csv(path+"/Resources/cpi_1913-present.csv", dtype={'Year': np.int})
     cpi.index = cpi.Year
-    return value * (cpi.ix[year_to].Avg / cpi.ix[year_from].Avg)
+    try:
+        if pd.isnull(cpi.loc[year_to].Avg):
+            year_to -= 1
+            new_value = value * (cpi.loc[year_to].Avg / cpi.loc[year_from].Avg)
+        else:
+            new_value = value * (cpi.loc[year_to].Avg / cpi.loc[year_from].Avg)
+    except:
+        year_to -= 1 #str(int(year_to) - 1)
+        new_value = value * (cpi.loc[year_to].Avg / cpi.loc[year_from].Avg)
+    return new_value
 
 def get_cpi(year_from, year_to):
     """
     returns cpi values for each year for calculation outside of utils module
     Args:
-        year_from (str) -> year dollar is to be converted from
-        year_to (str)-> year dollar is to be converted to
+        year_from (int) -> year dollar is to be converted from
+        year_to (int)-> year dollar is to be converted to
     """
     if os.name == 'posix':
-        os.chdir('/home/nate/source/Resources')
+        os.chdir('/home/nate/source/caeser/Resources')
     else:
         os.chdir('E:\cloud\Dropbox\Workspaces\Python\caeser\Resources')
-    cpi = pd.read_csv('cpi_1913-2015.csv', index_col='Year')
-    return [cpi.ix[year_from].Avg, cpi.ix[year_to].Avg]
+    cpi = pd.read_csv('cpi_1913-present.csv', index_col='Year')
+    if pd.isna(cpi.loc[year_to].Avg):
+        to_avg = cpi.loc[year_to].mean()
+    else:
+        to_avg = cpi.loc[year_to].Avg
+    return [cpi.loc[year_from].Avg, to_avg]
 
 def cursor_to_namedtuple(cursor):
     """
